@@ -1,0 +1,9 @@
+# Students' raw results files. These carry the full answer-by-answer record
+# and the student's real name — they stay on the teacher's machine.
+results/
+
+# Maps report URLs back to student names, and the salt those URLs derive from.
+# Publishing either would undo the point of the unguessable filenames.
+tools/manifest.json
+tools/.salt
+tools/nicknames.json
