@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-accent="orange">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050505">
+<title>TOEIC practice test 1 — score report</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500&display=swap" rel="stylesheet">
+
+<script>
+/* Theme before first paint, so an embedded report never flashes the wrong mode.
+   Same rules as the site's shared.js: dark is the system default, but an
+   explicit OS light preference wins. localStorage throws inside a sandboxed
+   iframe (Google Sites does this), so every access is guarded. */
+(function(){
+  var saved = null;
+  try { saved = localStorage.getItem('gm_theme'); } catch(e) {}
+  var t = (saved === 'light' || saved === 'dark') ? saved
+        : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+
+<style>
+/* ==========================================================================
+   GrammarMetric "electric" design system — tokens restated inline.
+   This is a standalone deliverable, so it follows the guide's single
+   self-contained HTML rule rather than linking the site's shared.css.
+
+   Accent-as-text follows the system's two rules:
+     - on a BRIGHT fill (chips, icon badges) the darkened same-hue text is
+       used in BOTH modes.
+     - on the page or on a 10-20% TINT the safe colour flips with the mode.
+       That is --accent-ink.
+   ========================================================================== */
+:root{
+  --gm-yellow:#FFFC00;  --gm-yellow-text:#736f00;
+  --gm-cyan:#00FFFF;    --gm-cyan-text:#004d4d;  --gm-cyan-outline:#006666;
+  --gm-orange:#FF3503;  --gm-orange-text:#3d0f00;
+  --gm-magenta:#FF00FF; --gm-magenta-text:#500050;
+  --gm-error:#ff5252;   --gm-error-text:#4a0d0d;
+
+  --rgb-cyan:0,255,255;  --rgb-orange:255,53,3;  --rgb-error:255,82,82;
+
+  --radius-card:14px; --radius-control:10px; --radius-pill:20px; --radius-badge:9px;
+  --font:'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --gap:18px; --pad-card:24px;
+}
+
+/* --- dark: the default --- */
+:root, :root[data-theme="dark"]{
+  --bg:#050505; --text:#ffffff;
+  --muted:rgba(255,255,255,0.55);
+  --card:rgba(255,255,255,0.04);
+  --line:rgba(255,255,255,0.08);
+  --line-strong:rgba(255,255,255,0.16);
+  --accent-ink:var(--accent);
+  /* data marks */
+  --ok-ink:var(--gm-cyan);
+  --no-ink:var(--gm-error);
+}
+/* --- light --- */
+:root[data-theme="light"]{
+  --bg:#ffffff; --text:#050505;
+  --muted:rgba(5,5,5,0.62);        /* site deviation: 0.55 fails on tints */
+  --card:rgba(5,5,5,0.03);
+  --line:rgba(5,5,5,0.08);
+  --line-strong:rgba(5,5,5,0.16);
+  --accent-ink:var(--accent-text);
+  /* #00FFFF is 1.3:1 on white and #ff5252 is 2.6:1 — both need the
+     darkened same-hue value as ink in light mode. */
+  --ok-ink:var(--gm-cyan-outline);
+  --no-ink:#c62828;
+}
+/* --- lead accent: orange, the site's TOEIC accent --- */
+:root, :root[data-accent="orange"]{
+  --accent:var(--gm-orange); --accent-text:var(--gm-orange-text);
+  --accent-rgb:var(--rgb-orange);
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{font-family:var(--font);}          /* root, or it falls back to Times */
+body{background:var(--bg); color:var(--text); font-family:var(--font);
+  font-weight:400; font-size:16px; line-height:1.6;
+  -webkit-text-size-adjust:100%;}
+b,strong{font-weight:500;}              /* or the browser uses 700 */
+h1,h2,h3{font-weight:500; line-height:1.3;}
+
+.wrap{max-width:880px; margin:0 auto; padding:28px 18px 64px;}
+
+/* ---------- masthead ---------- */
+.masthead{margin-bottom:26px;}
+.eyebrow{font-size:13px; color:var(--accent-ink); letter-spacing:.2px;}
+.masthead h1{font-size:26px; margin:6px 0 4px;}
+.who{font-size:15px; color:var(--muted);}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+.chip{font-size:13px; padding:5px 13px; border-radius:var(--radius-pill);
+  background:rgba(var(--accent-rgb),0.12); color:var(--accent-ink);
+  border:1px solid var(--line);}
+/* the one full-saturation chip on the screen — the caveat that matters most */
+.chip.lead{background:var(--accent); color:var(--accent-text);
+  border-color:transparent; font-weight:500;}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex; gap:8px; margin-bottom:20px; overflow-x:auto;
+  padding-bottom:3px; -webkit-overflow-scrolling:touch;}
+.tabs button{flex:0 0 auto; font-family:inherit; font-size:15px; font-weight:400;
+  padding:10px 17px; border:1px solid var(--line); background:transparent;
+  color:var(--muted); border-radius:var(--radius-control); cursor:pointer;
+  white-space:nowrap; min-height:44px;}
+.tabs button:hover{color:var(--text); border-color:var(--line-strong);}
+.tabs button[aria-selected="true"]{background:var(--accent);
+  color:var(--accent-text); border-color:transparent; font-weight:500;}
+.tabs button:focus-visible{outline:2px solid var(--accent-ink); outline-offset:2px;}
+.panel{display:none;} .panel.active{display:block;}
+
+/* ---------- cards: one model only ---------- */
+.card{background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius-card); padding:var(--pad-card); margin-bottom:var(--gap);}
+.card h2{font-size:19px; margin-bottom:6px;}
+.card h3{font-size:15.5px; margin:22px 0 10px;}
+.card h3:first-of-type{margin-top:6px;}
+.lede{font-size:14.5px; color:var(--muted); margin-bottom:18px;}
+p.note{font-size:14px; color:var(--muted); margin-top:14px;}
+.card > p + p{margin-top:10px;}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px;}
+.tile{background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius-card); padding:16px 18px;}
+.tile .lbl{font-size:13px; color:var(--muted);}
+.tile .val{font-size:32px; font-weight:500; line-height:1.2; margin-top:4px;}
+.tile .val small{font-size:15px; color:var(--muted);}
+.tile .sub{font-size:13px; color:var(--muted); margin-top:3px;}
+/* hero: the one number the report leads with */
+.tile.hero{background:rgba(var(--accent-rgb),0.10);
+  border-color:rgba(var(--accent-rgb),0.28);}
+.tile.hero .val{font-size:42px; color:var(--accent-ink);}
+
+/* ---------- score band ---------- */
+.scale{margin-top:22px;}
+.scale-track{position:relative; height:14px; border-radius:var(--radius-pill);
+  background:rgba(var(--accent-rgb),0.14);}
+.scale-band{position:absolute; top:0; bottom:0; background:var(--accent);
+  border-radius:var(--radius-pill);}
+.scale-ticks{display:flex; justify-content:space-between; margin-top:8px;
+  font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums;}
+.scale-cap{font-size:14px; color:var(--muted); margin-top:12px;}
+
+/* ---------- bar chart ---------- */
+.row{display:grid; grid-template-columns:104px 1fr 66px; align-items:center;
+  gap:12px; padding:4px 0;}
+.row .rl{font-size:13.5px; color:var(--muted); text-align:right; white-space:nowrap;}
+.row .rv{font-size:13.5px; font-variant-numeric:tabular-nums;}
+.track{position:relative; height:20px; border-radius:4px;
+  background:rgba(var(--accent-rgb),0.10);}
+.fill{position:absolute; left:0; top:0; bottom:0; background:var(--accent);
+  border-radius:0 4px 4px 0; min-width:3px;}   /* 4px data-end, square at baseline */
+.chance{position:absolute; top:-4px; bottom:-4px; width:1px;
+  background:var(--line-strong);}
+.chance::after{content:attr(data-l); position:absolute; top:-17px; left:50%;
+  transform:translateX(-50%); font-size:11px; color:var(--muted); white-space:nowrap;}
+.chart-foot{font-size:13px; color:var(--muted); margin-top:16px;
+  padding-top:12px; border-top:1px solid var(--line);}
+
+/* ---------- status cells ----------
+   Tints, not saturated fills: 60 solid neon squares would blow the 60/30/10
+   proportion the guide is built around. The ✓/✗ glyph is not decoration —
+   cyan vs red measures deltaE 9.1 protan in light mode, inside the band that
+   is only legal with a secondary channel. */
+.sets{display:grid; grid-template-columns:repeat(auto-fill,minmax(178px,1fr));
+  gap:12px; margin-top:8px;}
+.set{border:1px solid var(--line); border-radius:var(--radius-control);
+  padding:10px 12px;}
+/* nowrap: a wrapped label ("Conversation 10 · Q68–70") made one box taller
+   than the rest of its row */
+.set .sl{font-size:12px; color:var(--muted); margin-bottom:7px; white-space:nowrap;}
+.cells{display:flex; gap:5px;}
+.cell{width:28px; height:28px; border-radius:var(--radius-badge); display:flex;
+  align-items:center; justify-content:center; font-size:14px; font-weight:500;
+  cursor:default; font-variant-emoji:text;}
+.cell.ok{background:rgba(var(--rgb-cyan),0.16); color:var(--ok-ink);}
+.cell.no{background:rgba(var(--rgb-error),0.16); color:var(--no-ink);}
+.cell.na{background:var(--card); color:var(--muted); border:1px solid var(--line);}
+.cell.pos1{outline:1px solid var(--line-strong); outline-offset:1px;}
+
+.legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:16px;
+  font-size:13.5px; color:var(--muted);}
+.legend span{display:flex; align-items:center; gap:7px;}
+.sw{width:20px; height:20px; border-radius:var(--radius-badge);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:500; font-variant-emoji:text;}
+
+/* ---------- finding callout ---------- */
+.finding{background:rgba(var(--accent-rgb),0.08);
+  border:1px solid rgba(var(--accent-rgb),0.20);
+  border-radius:var(--radius-card); padding:17px 19px; margin:18px 0;}
+.finding .ft{font-size:13px; color:var(--accent-ink); margin-bottom:6px;}
+.finding p + p{margin-top:10px;}
+
+/* ---------- steps ---------- */
+ol.steps{list-style:none; counter-reset:s;}
+ol.steps li{counter-increment:s; position:relative; padding:0 0 20px 46px;}
+ol.steps li:last-child{padding-bottom:0;}
+/* icon badge: bright accent fill, darkened same-hue ink, 9px — both modes */
+ol.steps li::before{content:counter(s); position:absolute; left:0; top:1px;
+  width:30px; height:30px; border-radius:var(--radius-badge);
+  background:var(--accent); color:var(--accent-text); font-size:14px;
+  font-weight:500; display:flex; align-items:center; justify-content:center;}
+ol.steps li b{display:block; margin-bottom:3px;}
+ol.steps li span{font-size:14.5px; color:var(--muted);}
+ul.wins{list-style:none;}
+ul.wins li{position:relative; padding:0 0 10px 20px; font-size:15px; color:var(--muted);}
+ul.wins li::before{content:""; position:absolute; left:0; top:10px; width:6px;
+  height:6px; border-radius:50%; background:var(--accent-ink);}
+
+/* ---------- table view ---------- */
+details.tv{margin-top:16px;}
+details.tv summary{font-size:13.5px; color:var(--accent-ink); cursor:pointer; padding:5px 0;}
+details.tv table{width:100%; border-collapse:collapse; margin-top:12px; font-size:13.5px;}
+details.tv th,details.tv td{text-align:left; padding:7px 11px;
+  border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums;}
+details.tv th{color:var(--muted); font-weight:500;}
+.tblwrap{overflow-x:auto;}
+
+.foot{font-size:12.5px; color:var(--muted); text-align:center; margin-top:10px;}
+.btn{font-family:inherit; font-size:14.5px; font-weight:400; padding:11px 20px;
+  border:1px solid var(--line-strong); background:transparent; color:var(--text);
+  border-radius:var(--radius-control); cursor:pointer; min-height:44px;}
+.btn:hover{border-color:var(--accent-ink); color:var(--accent-ink);}
+.themebtn{position:absolute; top:26px; right:18px; width:40px; height:40px;
+  padding:0; font-size:15px;}
+.masthead{position:relative;}
+
+@media (max-width:560px){
+  .row{grid-template-columns:92px 1fr 56px; gap:9px;}
+  .row .rl,.row .rv{font-size:12.5px;}
+  .masthead h1{font-size:22px; padding-right:46px;}
+  .tile .val{font-size:28px;} .tile.hero .val{font-size:34px;}
+  .card{padding:18px;}
+}
+@media print{
+  .tabs,.btn{display:none;}
+  .panel{display:block !important; page-break-inside:avoid;}
+  .card{page-break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="masthead">
+  <button class="btn themebtn" id="themeToggle" aria-label="Switch to light mode">☀</button>
+  <div class="eyebrow">GrammarMetric</div>
+  <h1>TOEIC practice test 1 — score report</h1>
+  <div class="who" id="who"></div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true"  data-p="overview">Overview</button>
+  <button role="tab" aria-selected="false" data-p="listening">Listening</button>
+  <button role="tab" aria-selected="false" data-p="reading">Reading</button>
+  <button role="tab" aria-selected="false" data-p="next">What to do next</button>
+</div>
+
+<section class="panel active" id="p-overview"  role="tabpanel"></section>
+<section class="panel"        id="p-listening" role="tabpanel"></section>
+<section class="panel"        id="p-reading"   role="tabpanel"></section>
+<section class="panel"        id="p-next"      role="tabpanel"></section>
+
+<p class="foot" id="foot"></p>
+
+</div>
+
+<script>
+/* ============================================================================
+   This page contains NO answer key. Everything is derived from the `correct`
+   flags already in the student's results file, so the report can be hosted
+   publicly without exposing the test.
+   To make a report for another student: replace RESULTS with their JSON.
+   ============================================================================ */
+
+const RESULTS = {"test":"Tactics for TOEIC - Practice Test 1","student":{"class":"5"},"displayName":"Farn","mode":"class","startedAt":"2026-08-04T00:41:13.146Z","submittedAt":"2026-08-04T02:38:31.091Z","readingSecondsUsed":4820,"summary":{"listeningRaw":61,"readingRaw":44,"listeningScaled":"255-330","readingScaled":"140-205","totalEstimate":"395-535","perPart":{"p1":{"answered":10,"correct":8,"of":10},"p2":{"answered":30,"correct":20,"of":30},"p3":{"answered":30,"correct":19,"of":30},"p4":{"answered":30,"correct":14,"of":30},"p5":{"answered":40,"correct":15,"of":40},"p6":{"answered":12,"correct":6,"of":12},"p7":{"answered":48,"correct":23,"of":48}}},"perQuestion":[[1,"p1",1],[2,"p1",1],[3,"p1",1],[4,"p1",0],[5,"p1",1],[6,"p1",1],[7,"p1",1],[8,"p1",0],[9,"p1",1],[10,"p1",1],[11,"p2",1],[12,"p2",1],[13,"p2",1],[14,"p2",1],[15,"p2",1],[16,"p2",1],[17,"p2",1],[18,"p2",0],[19,"p2",1],[20,"p2",0],[21,"p2",1],[22,"p2",1],[23,"p2",1],[24,"p2",0],[25,"p2",1],[26,"p2",1],[27,"p2",0],[28,"p2",0],[29,"p2",0],[30,"p2",1],[31,"p2",1],[32,"p2",1],[33,"p2",1],[34,"p2",0],[35,"p2",0],[36,"p2",0],[37,"p2",1],[38,"p2",1],[39,"p2",0],[40,"p2",1],[41,"p3",1],[42,"p3",1],[43,"p3",1],[44,"p3",0],[45,"p3",1],[46,"p3",1],[47,"p3",1],[48,"p3",1],[49,"p3",0],[50,"p3",1],[51,"p3",0],[52,"p3",1],[53,"p3",1],[54,"p3",1],[55,"p3",0],[56,"p3",1],[57,"p3",0],[58,"p3",0],[59,"p3",1],[60,"p3",1],[61,"p3",1],[62,"p3",0],[63,"p3",0],[64,"p3",1],[65,"p3",1],[66,"p3",0],[67,"p3",1],[68,"p3",0],[69,"p3",0],[70,"p3",1],[71,"p4",1],[72,"p4",0],[73,"p4",1],[74,"p4",1],[75,"p4",0],[76,"p4",1],[77,"p4",0],[78,"p4",0],[79,"p4",1],[80,"p4",1],[81,"p4",0],[82,"p4",0],[83,"p4",0],[84,"p4",0],[85,"p4",0],[86,"p4",1],[87,"p4",0],[88,"p4",1],[89,"p4",1],[90,"p4",0],[91,"p4",1],[92,"p4",1],[93,"p4",0],[94,"p4",0],[95,"p4",0],[96,"p4",1],[97,"p4",0],[98,"p4",1],[99,"p4",1],[100,"p4",0],[101,"p5",1],[102,"p5",1],[103,"p5",0],[104,"p5",0],[105,"p5",1],[106,"p5",1],[107,"p5",0],[108,"p5",1],[109,"p5",1],[110,"p5",0],[111,"p5",0],[112,"p5",0],[113,"p5",1],[114,"p5",0],[115,"p5",0],[116,"p5",0],[117,"p5",1],[118,"p5",0],[119,"p5",0],[120,"p5",0],[121,"p5",0],[122,"p5",1],[123,"p5",0],[124,"p5",1],[125,"p5",1],[126,"p5",0],[127,"p5",0],[128,"p5",0],[129,"p5",0],[130,"p5",1],[131,"p5",1],[132,"p5",0],[133,"p5",0],[134,"p5",0],[135,"p5",1],[136,"p5",0],[137,"p5",1],[138,"p5",0],[139,"p5",0],[140,"p5",0],[141,"p6",1],[142,"p6",1],[143,"p6",0],[144,"p6",1],[145,"p6",0],[146,"p6",0],[147,"p6",0],[148,"p6",1],[149,"p6",0],[150,"p6",1],[151,"p6",0],[152,"p6",1],[153,"p7",1],[154,"p7",0],[155,"p7",1],[156,"p7",1],[157,"p7",0],[158,"p7",0],[159,"p7",1],[160,"p7",1],[161,"p7",1],[162,"p7",0],[163,"p7",1],[164,"p7",0],[165,"p7",1],[166,"p7",0],[167,"p7",0],[168,"p7",0],[169,"p7",1],[170,"p7",1],[171,"p7",0],[172,"p7",0],[173,"p7",0],[174,"p7",1],[175,"p7",1],[176,"p7",1],[177,"p7",1],[178,"p7",0],[179,"p7",1],[180,"p7",0],[181,"p7",0],[182,"p7",0],[183,"p7",0],[184,"p7",1],[185,"p7",0],[186,"p7",1],[187,"p7",1],[188,"p7",1],[189,"p7",0],[190,"p7",1],[191,"p7",1],[192,"p7",0],[193,"p7",0],[194,"p7",0],[195,"p7",0],[196,"p7",1],[197,"p7",0],[198,"p7",1],[199,"p7",0],[200,"p7",0]]};
+
+/* ---- Question metadata. Types only — never answers. ---- */
+const PART_NAMES = {p1:"Part 1",p2:"Part 2",p3:"Part 3",p4:"Part 4",p5:"Part 5",p6:"Part 6",p7:"Part 7"};
+const PART_DESC  = {p1:"Photographs",p2:"Question–response",p3:"Conversations",p4:"Talks",
+                    p5:"Incomplete sentences",p6:"Text completion",p7:"Reading comprehension"};
+/* Part 2 is the only 3-option part; the rest are 4-option. */
+const CHANCE = {p1:.25,p2:1/3,p3:.25,p4:.25,p5:.25,p6:.25,p7:.25};
+
+/* Parts 3 & 4 arrive in sets of three questions per recording. */
+const LISTEN_SETS = [];
+for(let s=41; s<=68; s+=3) LISTEN_SETS.push({part:"p3", qs:[s,s+1,s+2]});
+for(let s=71; s<=98; s+=3) LISTEN_SETS.push({part:"p4", qs:[s,s+1,s+2]});
+
+/* Part 5 sub-types. f = word form (one root, four endings),
+   g = grammar / function words, v = vocabulary (four different words). */
+const P5_TYPE = {101:"f",102:"g",103:"g",104:"v",105:"v",106:"f",107:"g",108:"f",109:"v",110:"g",
+111:"v",112:"f",113:"v",114:"v",115:"g",116:"f",117:"g",118:"f",119:"v",120:"f",
+121:"g",122:"g",123:"v",124:"v",125:"v",126:"g",127:"f",128:"g",129:"v",130:"f",
+131:"g",132:"v",133:"f",134:"f",135:"g",136:"f",137:"v",138:"v",139:"g",140:"v"};
+const P5_LABEL = {f:"Word form", g:"Grammar words", v:"Vocabulary"};
+
+const P7_DOUBLE_FROM = 181;      /* sets from here span two documents */
+const P7_VOCAB = [159,176,184,195];   /* "closest in meaning to" items */
+
+/* ============================ derive ============================ */
+const R = RESULTS.perQuestion.map(([q,part,c])=>({q, part, ok:c===1, blank:c===-1}));
+const byQ = {}; R.forEach(r=>byQ[r.q]=r);
+/* The generator publishes only the display name — never the full name from
+   the results file. See tools/make-reports.mjs. */
+const name = RESULTS.displayName || "Student";
+
+function tally(qs){
+  let ok=0, blank=0;
+  qs.forEach(q=>{ const r=byQ[q]; if(!r) return; if(r.ok) ok++; if(r.blank) blank++; });
+  return {ok, of:qs.length, blank, pct:qs.length?ok/qs.length:0};
+}
+const range = (a,b)=>{const o=[];for(let i=a;i<=b;i++)o.push(i);return o;};
+const pct = f=>Math.round(f*100);
+const s2hm = s=>`${Math.floor(s/60)} min ${String(Math.round(s%60)).padStart(2,"0")} s`;
+
+const P = RESULTS.summary.perPart;
+const shortL = tally(range(1,40));      // Parts 1–2: single sentences & exchanges
+const longL  = tally(range(41,100));    // Parts 3–4: 30–60 second recordings
+const totalBlank = R.filter(r=>r.blank).length;
+
+const POS    = [0,1,2].map(i=>tally(LISTEN_SETS.map(s=>s.qs[i])));
+const POS_P3 = [0,1,2].map(i=>tally(LISTEN_SETS.filter(s=>s.part==="p3").map(s=>s.qs[i])));
+const POS_P4 = [0,1,2].map(i=>tally(LISTEN_SETS.filter(s=>s.part==="p4").map(s=>s.qs[i])));
+
+const P5T = ["f","g","v"].map(t=>({
+  t, label:P5_LABEL[t],
+  ...tally(Object.keys(P5_TYPE).filter(q=>P5_TYPE[q]===t).map(Number))
+}));
+
+const p7single = tally(range(153, P7_DOUBLE_FROM-1));
+const p7double = tally(range(P7_DOUBLE_FROM, 200));
+const p7vocab  = tally(P7_VOCAB);
+
+/* ============================ findings ============================
+   Every narrative in this report is chosen from the student's own data.
+   An earlier version hard-coded one student's story, which would have told
+   the next student the opposite of what their test actually showed.
+
+   Each candidate carries an effect size and the n behind it. Anything under
+   the thresholds is reported as "no clear pattern" rather than dressed up
+   into a finding — with 12-20 questions per bucket, a small gap is noise. */
+const GAP_STRONG = 0.20;          // 20 percentage points
+const GAP_REAL   = 0.12;
+const READING_ALLOWANCE = 75 * 60;
+
+const detail   = tally([...LISTEN_SETS.map(s => s.qs[1]), ...LISTEN_SETS.map(s => s.qs[2])]);
+const overTime = RESULTS.readingSecondsUsed > READING_ALLOWANCE;
+const timeFrac = RESULTS.readingSecondsUsed / READING_ALLOWANCE;
+
+const p5sorted = P5T.slice().sort((a, b) => b.pct - a.pct);
+const p5spread = p5sorted[0].pct - p5sorted[p5sorted.length - 1].pct;
+
+/* Candidate headlines, largest genuine gap wins the overview card. */
+const CANDIDATES = [
+  { id:"shortlong", gap: shortL.pct - longL.pct,
+    label:"Short listening vs long listening" },
+  { id:"skills",    gap: (RESULTS.summary.listeningRaw - RESULTS.summary.readingRaw) / 100,
+    label:"Listening vs reading" },
+  { id:"p7split",   gap: p7single.pct - p7double.pct,
+    label:"One document vs two" },
+  { id:"listenpos", gap: POS[0].pct - detail.pct,
+    label:"Where the marks go inside each recording" }
+];
+const headline = CANDIDATES
+  .filter(c => Math.abs(c.gap) >= GAP_REAL)
+  .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))[0] || null;
+
+const fired = new Set();   // findings strong enough to earn advice
+
+/* ============================ components ============================ */
+function bar(label, t, chance, opts={}){
+  const w = Math.max(t.pct*100, .8);
+  const ch = chance ? `<div class="chance" style="left:${chance*100}%" data-l="${opts.chanceLabel||""}"></div>` : "";
+  return `<div class="row">
+    <div class="rl">${label}</div>
+    <div class="track" title="${label}: ${t.ok} of ${t.of} correct (${pct(t.pct)}%)">
+      <div class="fill" style="width:${w}%"></div>${ch}
+    </div>
+    <div class="rv">${t.ok}/${t.of}</div>
+  </div>`;
+}
+function table(headers, rows){
+  return `<details class="tv"><summary>Show the numbers as a table</summary><div class="tblwrap"><table>
+    <thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>
+  </table></div></details>`;
+}
+function cell(q, markFirst){
+  const r = byQ[q];
+  const cls = r.blank ? "na" : (r.ok ? "ok" : "no");
+  // U+FE0E asks for text presentation so these never become colour emoji
+  const gl  = r.blank ? "–" : (r.ok ? "✓︎" : "✗︎");
+  const lab = r.blank ? "not answered" : (r.ok ? "correct" : "incorrect");
+  return `<div class="cell ${cls}${markFirst?" pos1":""}" title="Question ${q} — ${lab}">${gl}</div>`;
+}
+const statusLegend = `<div class="legend">
+  <span><i class="sw cell ok">✓︎</i> Correct</span>
+  <span><i class="sw cell no">✗︎</i> Incorrect</span>
+  <span><i class="sw cell na">–</i> Not answered</span>
+</div>`;
+
+/* ============================ header ============================ */
+const ended = new Date(RESULTS.submittedAt);
+document.getElementById("who").textContent =
+  `${name} · Class ${RESULTS.student.class} · ${ended.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}`;
+document.getElementById("chips").innerHTML =
+  (RESULTS.mode === "class"
+    ? `<span class="chip lead">Class mode — practice, not exam conditions</span>`
+    : `<span class="chip lead">Exam mode</span>`) +
+  `<span class="chip">${RESULTS.summary.listeningRaw + RESULTS.summary.readingRaw} of 200 correct</span>` +
+  `<span class="chip">${totalBlank===0?"All questions answered":totalBlank+" left blank"}</span>`;
+
+/* ============================ overview ============================ */
+const [tLo,tHi] = RESULTS.summary.totalEstimate.split("-").map(Number);
+
+document.getElementById("p-overview").innerHTML = `
+<div class="card">
+  <h2>Your score</h2>
+  <div class="tiles">
+    <div class="tile">
+      <div class="lbl">Listening</div>
+      <div class="val">${RESULTS.summary.listeningRaw}<small> / 100</small></div>
+      <div class="sub">scaled ${RESULTS.summary.listeningScaled.replace("-","–")}</div>
+    </div>
+    <div class="tile">
+      <div class="lbl">Reading</div>
+      <div class="val">${RESULTS.summary.readingRaw}<small> / 100</small></div>
+      <div class="sub">scaled ${RESULTS.summary.readingScaled.replace("-","–")}</div>
+    </div>
+    <div class="tile hero">
+      <div class="lbl">Estimated TOEIC score</div>
+      <div class="val">${tLo}–${tHi}</div>
+      <div class="sub">a range, not a single number</div>
+    </div>
+  </div>
+
+  <div class="scale">
+    <div class="scale-track"><div class="scale-band"
+      style="left:${(tLo-10)/980*100}%; width:${(tHi-tLo)/980*100}%"></div></div>
+    <div class="scale-ticks"><span>10</span><span>250</span><span>500</span><span>750</span><span>990</span></div>
+    <p class="scale-cap">The bar shows where this practice test places you on the
+      10–990 TOEIC scale. The conversion tables give a range because a practice test
+      cannot pin down a single number — treat <b>${tLo}–${tHi}</b> as the honest
+      answer, not ${tLo} and not ${tHi}.</p>
+  </div>
+  ${RESULTS.mode==="class" ? `<p class="note"><b>This was a class-mode run.</b> The audio
+    was played in class and there was no time limit, so this is a practice measurement
+    rather than a simulated exam result. It still shows clearly what to work on.</p>` : ""}
+</div>
+
+<div class="card">
+  <h2>Where the marks went</h2>
+  <p class="lede">Seven parts, correct out of total. The thin line on each bar is the
+    score you would expect from pure guessing.</p>
+  ${Object.keys(P).map((k,i)=>bar(PART_NAMES[k],
+      {ok:P[k].correct, of:P[k].of, pct:P[k].correct/P[k].of},
+      CHANCE[k], {chanceLabel: i===0 ? "guessing" : ""})).join("")}
+  <div class="chart-foot">Parts 1 and 2 are listening at short range; Parts 3 and 4
+    are longer listening; Parts 5–7 are reading.</div>
+  ${table(["Part","Focus","Correct","Total","%"],
+    Object.keys(P).map(k=>[PART_NAMES[k], PART_DESC[k], P[k].correct, P[k].of, pct(P[k].correct/P[k].of)+"%"]))}
+</div>
+
+${headlineCard()}`;
+
+/* The overview's lead finding is whichever gap in this student's test is
+   largest, not a fixed story. */
+function headlineCard(){
+  if(!headline) return `
+<div class="card">
+  <h2>What this test shows</h2>
+  <p>Your scores are fairly even across the different parts of the test — there is no
+    single area standing out as the thing to fix first. The listening and reading tabs
+    break each part down, and the last tab turns that into what to practise.</p>
+</div>`;
+
+  let ft = headline.label, body = "", charts = "";
+
+  if(headline.id === "shortlong" && headline.gap > 0){
+    fired.add("longlistening");
+    body = `<p>When English is <b>one sentence or one short exchange</b> — Parts 1 and 2 —
+      you got <b>${shortL.ok} of ${shortL.of}</b> (${pct(shortL.pct)}%). When it becomes a
+      <b>30–60 second conversation or talk</b> — Parts 3 and 4 — you got
+      <b>${longL.ok} of ${longL.of}</b> (${pct(longL.pct)}%).</p>
+      <p>Short spoken English is working. What is harder is <b>holding a longer stretch of
+      speech in your head</b> while three questions are waiting. The listening tab shows
+      where inside each recording that happens.</p>`;
+    charts = bar("Parts 1–2", shortL, (10*CHANCE.p1 + 30*CHANCE.p2)/40, {chanceLabel:"guessing"})
+           + bar("Parts 3–4", longL, .25);
+  }
+  else if(headline.id === "shortlong"){
+    body = `<p>Unusually, the <b>longer</b> recordings went better than the short ones —
+      ${longL.ok}/${longL.of} (${pct(longL.pct)}%) on Parts 3 and 4 against
+      ${shortL.ok}/${shortL.of} (${pct(shortL.pct)}%) on Parts 1 and 2. Longer recordings
+      give you context to work with; single sentences give you one chance and no second
+      clue, so they punish a missed word much harder.</p>`;
+    charts = bar("Parts 1–2", shortL, (10*CHANCE.p1 + 30*CHANCE.p2)/40, {chanceLabel:"guessing"})
+           + bar("Parts 3–4", longL, .25);
+  }
+  else if(headline.id === "skills"){
+    const lBig = headline.gap > 0;
+    fired.add(lBig ? "readingweak" : "listeningweak");
+    ft = lBig ? "Listening is ahead of reading" : "Reading is ahead of listening";
+    body = `<p>You scored <b>${RESULTS.summary.listeningRaw}/100</b> on listening and
+      <b>${RESULTS.summary.readingRaw}/100</b> on reading. TOEIC adds the two halves
+      together, so the ${lBig ? "reading" : "listening"} side is where the most points
+      are currently sitting unclaimed — that is the half worth the most practice time.</p>`;
+    charts = bar("Listening", {ok:RESULTS.summary.listeningRaw, of:100, pct:RESULTS.summary.listeningRaw/100}, .27, {chanceLabel:"guessing"})
+           + bar("Reading",   {ok:RESULTS.summary.readingRaw,   of:100, pct:RESULTS.summary.readingRaw/100},   .25);
+  }
+  else if(headline.id === "p7split"){
+    fired.add("twodoc");
+    ft = "Two-document reading sets";
+    body = `<p>In Part 7, passages with a <b>single</b> document went
+      ${p7single.ok}/${p7single.of} (${pct(p7single.pct)}%). The last four sets, where the
+      answer needs <b>two documents read together</b>, went ${p7double.ok}/${p7double.of}
+      (${pct(p7double.pct)}%).</p>
+      <p>Your reading itself is working — it is the cross-referencing that is costing you.
+      That is a technique, and techniques are quick to fix.</p>`;
+    charts = bar("One document", p7single, .25, {chanceLabel:"guessing"})
+           + bar("Two documents", p7double, .25);
+  }
+  else {
+    const gistOk = headline.gap > 0;
+    fired.add(gistOk ? "detailslost" : "gistlost");
+    ft = "Where the marks go inside each recording";
+    body = gistOk
+      ? `<p>Every recording in Parts 3 and 4 asks three questions — a general one first,
+         then two about details. You got <b>${POS[0].ok}/${POS[0].of}</b> of the general
+         questions (${pct(POS[0].pct)}%) but <b>${detail.ok}/${detail.of}</b> of the
+         details (${pct(detail.pct)}%).</p>
+         <p>So you are catching the situation and losing the specifics: the time, the
+         number, the reason, the thing somebody offers to do.</p>`
+      : `<p>Every recording in Parts 3 and 4 asks three questions — a general one first,
+         then two about details. You got <b>${detail.ok}/${detail.of}</b> of the detail
+         questions (${pct(detail.pct)}%) but only <b>${POS[0].ok}/${POS[0].of}</b> of the
+         general ones (${pct(POS[0].pct)}%).</p>
+         <p>That is the less common way round. You are picking up specifics but not
+         settling who is speaking and why — and the general question is usually the
+         easier mark of the three.</p>`;
+    charts = bar("General question", POS[0], .25, {chanceLabel:"guessing"})
+           + bar("Detail questions", detail, .25);
+  }
+
+  return `
+<div class="card">
+  <h2>The one thing this test shows most clearly</h2>
+  <div class="finding"><div class="ft">${ft}</div>${body}</div>
+  ${charts}
+</div>`;
+}
+
+/* ============================ listening ============================ */
+document.getElementById("p-listening").innerHTML = `
+<div class="card">
+  <h2>Inside each conversation and talk</h2>
+  <p class="lede">Every recording in Parts 3 and 4 has three questions. The first is
+    usually the general one — who is speaking, what is this about. The second and third
+    ask for details.</p>
+  ${bar("1st question", POS[0], .25, {chanceLabel:"guessing"})}
+  ${bar("2nd question", POS[1], .25)}
+  ${bar("3rd question", POS[2], .25)}
+  ${(() => {
+    const gap = POS[0].pct - detail.pct;
+    const nearChance = d => d.pct <= .32;
+    if(gap >= GAP_STRONG) return `<div class="finding">
+      <div class="ft">You are getting the situation, not the specifics</div>
+      <p>You answered <b>${POS[0].ok} of ${POS[0].of}</b> general questions correctly
+        (${pct(POS[0].pct)}%) but only <b>${detail.ok} of ${detail.of}</b> of the detail
+        questions (${pct(detail.pct)}%)${nearChance(detail) ? " — about what guessing alone would give" : ""}.</p>
+      <p>So you <b>are</b> following what the recording is about. What is being lost is
+        the specific detail: the time, the number, the reason, the thing somebody offers
+        to do. In Part 4 this is sharpest — ${POS_P4[0].ok} of ${POS_P4[0].of} general
+        questions right, ${POS_P4[1].ok + POS_P4[2].ok} of
+        ${POS_P4[1].of + POS_P4[2].of} details.</p></div>`;
+    if(gap <= -GAP_STRONG) return `<div class="finding">
+      <div class="ft">The general question is the one slipping</div>
+      <p>You answered <b>${detail.ok} of ${detail.of}</b> detail questions correctly
+        (${pct(detail.pct)}%) but only <b>${POS[0].ok} of ${POS[0].of}</b> of the general
+        ones (${pct(POS[0].pct)}%).</p>
+      <p>That is the less usual pattern, and it is good news: picking out specifics from
+        speech is the harder skill and you already have it. The general question — who is
+        talking, where, why — is normally answerable from the opening lines alone, so this
+        is usually about settling into the recording before it has started.</p></div>`;
+    return `<div class="finding">
+      <div class="ft">No clear pattern by question position</div>
+      <p>General questions ${POS[0].ok}/${POS[0].of} (${pct(POS[0].pct)}%), detail
+        questions ${detail.ok}/${detail.of} (${pct(detail.pct)}%). Those are close enough
+        that the difference is not reliable — with ${POS[0].of} and ${detail.of} questions
+        behind them, a gap this small is noise, so there is nothing here to act on. Your
+        listening marks are being lost fairly evenly across the recordings rather than at
+        one predictable point.</p></div>`;
+  })()}
+  ${table(["Question in set","Correct","Total","%","Part 3","Part 4"],
+    [0,1,2].map(i=>[["1st","2nd","3rd"][i], POS[i].ok, POS[i].of, pct(POS[i].pct)+"%",
+      `${POS_P3[i].ok}/${POS_P3[i].of}`, `${POS_P4[i].ok}/${POS_P4[i].of}`]))}
+</div>
+
+<div class="card">
+  <h2>Recording by recording</h2>
+  <p class="lede">Each box is one conversation or talk. The first question of each set
+    is outlined.</p>
+  <h3>Part 3 — conversations (${P.p3.correct}/${P.p3.of})</h3>
+  <div class="sets">
+    ${LISTEN_SETS.filter(s=>s.part==="p3").map((s,i)=>`<div class="set">
+      <div class="sl">Conversation ${i+1} · Q${s.qs[0]}–${s.qs[2]}</div>
+      <div class="cells">${s.qs.map((q,j)=>cell(q,j===0)).join("")}</div></div>`).join("")}
+  </div>
+  <h3>Part 4 — talks (${P.p4.correct}/${P.p4.of})</h3>
+  <div class="sets">
+    ${LISTEN_SETS.filter(s=>s.part==="p4").map((s,i)=>`<div class="set">
+      <div class="sl">Talk ${i+1} · Q${s.qs[0]}–${s.qs[2]}</div>
+      <div class="cells">${s.qs.map((q,j)=>cell(q,j===0)).join("")}</div></div>`).join("")}
+  </div>
+  ${statusLegend}
+  ${(() => {
+    const zeros = LISTEN_SETS.filter(s => s.qs.every(q => !byQ[q].ok));
+    const fulls = LISTEN_SETS.filter(s => s.qs.every(q =>  byQ[q].ok));
+    const bits = [];
+    if(zeros.length >= 3){
+      fired.add("lostthread");
+      bits.push(`<b>${zeros.length} recordings scored zero out of three.</b> A whole set
+        going down together usually means the thread was lost in the opening seconds and
+        never recovered — which is a different problem from missing one hard question.`);
+    }
+    if(fulls.length >= 3) bits.push(`<b>${fulls.length} recordings scored three out of
+      three</b>, so when you are locked in you are getting everything, not scraping by.`);
+    if(!bits.length) bits.push(`Marks are spread across the recordings rather than
+      clustered — most sets have both right and wrong answers in them.`);
+    return `<p class="note">${bits.join(" ")}</p>`;
+  })()}
+</div>`;
+
+/* ============================ reading ============================ */
+document.getElementById("p-reading").innerHTML = `
+<div class="card">
+  <h2>Part 5 — the grammar and vocabulary questions</h2>
+  <p class="lede">${P.p5.correct} of ${P.p5.of} correct. Split three ways by what each
+    question actually tests.</p>
+  ${P5T.map((t,i)=>bar(t.label, t, .25, {chanceLabel:i===0?"guessing":""})).join("")}
+  ${(() => {
+    const best = p5sorted[0], worst = p5sorted[p5sorted.length - 1];
+    if(p5spread < .15){
+      fired.add("p5flat");
+      return `<div class="finding">
+      <div class="ft">Read this carefully — it is good news disguised as bad</div>
+      <p>These three scores are <b>too close together to rank</b>. It would be easy to say
+        "vocabulary is your weakest area", but with ${P5T.map(t=>t.of).join(", ")} questions
+        in the three groups, a gap this small is not a real difference — it is noise.</p>
+      <p>What the numbers <i>do</i> say honestly: all three sit
+        ${p5sorted[0].pct <= .35 ? "close to the 25% you would score by guessing" :
+          "at a similar level"}. Part 5 is not a case of one weak sub-skill to patch. It
+        needs steady foundational work, and that work will lift all three together.</p>
+    </div>`;
+    }
+    fired.add("p5targeted");
+    return `<div class="finding">
+      <div class="ft">Here the three groups really do differ</div>
+      <p><b>${best.label}</b> is your strongest at ${best.ok}/${best.of}
+        (${pct(best.pct)}%), and <b>${worst.label.toLowerCase()}</b> your weakest at
+        ${worst.ok}/${worst.of} (${pct(worst.pct)}%). That is a
+        ${Math.round(p5spread*100)}-point gap — wide enough, across
+        ${best.of} and ${worst.of} questions, to be worth acting on rather than a
+        coincidence.</p>
+      <p>${worst.t === "g"
+        ? `Grammar words are the small ones that carry the sentence — prepositions,
+           conjunctions, relative pronouns, <i>among / whether / who / since</i>. They are
+           a closed set: there are only so many, they come up constantly, and they reward
+           study more directly than vocabulary does.`
+        : worst.t === "f"
+        ? `Word-form questions give you one root word in four endings —
+           <i>responsible, responsibly, responsibility, responsibilities</i>. You do not
+           need to know the word: you need to work out what job the gap does in the
+           sentence. That is a rule you can learn once and reuse every time.`
+        : `Vocabulary questions give you four different words where only one fits the
+           meaning. This is the slowest of the three to build, because it rests on how
+           many words you have met — which makes steady reading the lever, not drills.`}</p>
+    </div>`;
+  })()}
+  ${table(["Type","What it tests","Correct","Total","%"],
+    [["Word form","Four endings of one word — <i>responsible / responsibly / responsibility</i>",P5T[0].ok,P5T[0].of,pct(P5T[0].pct)+"%"],
+     ["Grammar words","Prepositions, conjunctions, pronouns — <i>among / whether / who</i>",P5T[1].ok,P5T[1].of,pct(P5T[1].pct)+"%"],
+     ["Vocabulary","Four different words, one meaning fits",P5T[2].ok,P5T[2].of,pct(P5T[2].pct)+"%"]])}
+</div>
+
+<div class="card">
+  <h2>Part 7 — the reading passages</h2>
+  <p class="lede">${P.p7.correct} of ${P.p7.of} correct. These passages come in two
+    kinds, and they did not go equally well.</p>
+  ${bar("One document", p7single, .25, {chanceLabel:"guessing"})}
+  ${bar("Two documents", p7double, .25)}
+  ${(() => {
+    const gap = p7single.pct - p7double.pct;
+    if(gap >= GAP_REAL){
+      fired.add("twodoc");
+      return `<div class="finding">
+      <div class="ft">Two-document sets cost you</div>
+      <p>On passages with a <b>single</b> document you scored ${p7single.ok}/${p7single.of}
+        (${pct(p7single.pct)}%). On the last four sets, where the answer needs
+        <b>two documents cross-referenced</b> — a letter and a form, an e-mail and an
+        invoice — you scored ${p7double.ok}/${p7double.of} (${pct(p7double.pct)}%).</p>
+      <p>These sets are the ones where the question looks answerable from the first
+        document but the actual answer is only in the second.</p></div>`;
+    }
+    if(gap <= -GAP_REAL) return `<div class="finding">
+      <div class="ft">The two-document sets went better</div>
+      <p>Two-document sets scored ${p7double.ok}/${p7double.of} (${pct(p7double.pct)}%)
+        against ${p7single.ok}/${p7single.of} (${pct(p7single.pct)}%) on single documents,
+        so cross-referencing is not what is costing you here. The single-document sets come
+        first, which makes them the place to slow down rather than speed up.</p></div>`;
+    return `<div class="finding">
+      <div class="ft">Both kinds went about the same</div>
+      <p>${p7single.ok}/${p7single.of} (${pct(p7single.pct)}%) on single documents,
+        ${p7double.ok}/${p7double.of} (${pct(p7double.pct)}%) on two-document sets. Close
+        enough to call level, so cross-referencing two documents is not a separate weakness
+        for you — Part 7 is simply reading, at the pace it demands.</p></div>`;
+  })()}
+
+  <h3>Word-meaning questions</h3>
+  <p class="lede" style="margin-bottom:0">The "<i>closest in meaning to</i>" questions:
+    <b>${p7vocab.ok} of ${p7vocab.of}</b>.</p>
+  <p class="note">Four questions is a small number, so do not read too much into the
+    score itself — but these are worth attention because they are completely learnable.
+    The word is always in front of you, and the answer is the one that still works when
+    you put it back in the sentence.</p>
+</div>
+
+<div class="card">
+  <h2>Your timing</h2>
+  <div class="tiles">
+    <div class="tile"><div class="lbl">Reading time used</div>
+      <div class="val" style="font-size:26px">${s2hm(RESULTS.readingSecondsUsed)}</div>
+      <div class="sub">of 75 min allowed</div></div>
+    <div class="tile"><div class="lbl">Left blank</div>
+      <div class="val">${totalBlank}<small> / 200</small></div>
+      <div class="sub">${totalBlank<=2?"essentially none":"worth fixing"}</div></div>
+  </div>
+  ${(() => {
+    const used = s2hm(RESULTS.readingSecondsUsed);
+    const p = Math.round(timeFrac * 100);
+    const blanks = totalBlank === 0 ? "nothing"
+      : "only " + totalBlank + " question" + (totalBlank === 1 ? "" : "s");
+    const classNote = RESULTS.mode === "class"
+      ? ` This run had no timer on screen and the clock only ran while the test was open.`
+      : "";
+    if(overTime){
+      fired.add("overtime");
+      return `<p class="note"><b>You went over the time limit.</b> You used ${used} on the
+        reading section — ${p}% of the 75 minutes it allows. In a real exam the test would
+        have been taken away at 75 minutes, so the questions you reached in that last
+        ${s2hm(RESULTS.readingSecondsUsed - READING_ALLOWANCE)} would have scored
+        nothing.${classNote} This makes speed the priority, and Part 5 is where it is won:
+        those are meant to take about 20 seconds each, and every one you save is a minute
+        back for Part 7.</p>`;
+    }
+    if(timeFrac >= 0.9){
+      fired.add("tighttime");
+      return `<p class="note"><b>You finished — but with almost no margin.</b> You used
+        ${used} of the 75 minutes, which is ${p}% of the allowance, and left ${blanks}
+        blank.${classNote} Under real exam pressure that cushion could disappear, so the
+        goal is to get faster on Part 5 to build one — not to rush.</p>`;
+    }
+    return `<p class="note"><b>Timing is not a problem for you.</b> You used ${used} of the
+      75 minutes — ${p}% of the allowance — and left ${blanks} blank.${classNote} That
+      leaves room to slow down and re-check on the questions you are unsure of, which is a
+      better use of the spare time than finishing early.</p>`;
+  })()}
+</div>`;
+
+/* ============================ next ============================ */
+document.getElementById("p-next").innerHTML = `
+<div class="card">
+  <h2>What to work on, in order</h2>
+  <p class="lede">Based on where the marks actually went — the first item is worth far
+    more than the last.</p>
+  ${(() => {
+    /* Advice is drawn only from findings that actually fired for this student,
+       ordered by how much each is worth. */
+    const ADVICE = {
+      overtime: [`Get faster on Part 5, because that is where the time goes`,
+        `You ran past the 75 minutes, so speed is worth more to you right now than any
+         single skill. Part 5 questions are meant to take about 20 seconds: read the four
+         options first, decide what <i>kind</i> of question it is, and if nothing is
+         obvious in 20 seconds, mark your best guess and move on. Time saved there is time
+         Part 7 desperately needs.`],
+      detailslost: [`Read the three questions before each recording starts`,
+        `You are getting the general question right and the detail questions wrong, which
+         is what happens when you listen first and read the questions afterwards — by then
+         the detail is gone. In the pause before each recording, read all three questions
+         and underline the question word: <i>when, how much, what does she offer</i>. Then
+         listen <i>for</i> those three things.`],
+      gistlost: [`Settle the situation in the first five seconds`,
+        `You are picking up details but missing the general question, which is usually the
+         easiest of the three. It is almost always answerable from the opening lines. As
+         each recording starts, answer two things in your head before anything else:
+         <i>who is talking</i> and <i>why</i>. Practise with the first 10 seconds only —
+         play, stop, say who and where.`],
+      lostthread: [`Practise recovering when you lose the thread`,
+        `Several recordings scored zero out of three, which means the thread went early and
+         never came back. When you realise you are lost, do not re-run the missed sentence
+         in your head — that is how the next one goes too. Drop it, look at the next
+         question, and listen forward from where you are.`],
+      twodoc: [`On two-document sets, find the link first`,
+        `Before answering, look at both documents and find what connects them — a name, a
+         date, an order number, a price. The questions that cost you marks are almost
+         always the ones needing a fact from each document at the same time.`],
+      p5targeted: [`Target ${p5sorted[p5sorted.length-1].label.toLowerCase()} in Part 5`,
+        `This is the one part of the test where your own results point at something
+         specific rather than "everything". You scored
+         ${p5sorted[p5sorted.length-1].ok}/${p5sorted[p5sorted.length-1].of} there against
+         ${p5sorted[0].ok}/${p5sorted[0].of} on
+         ${p5sorted[0].label.toLowerCase()}. Ten of that one type a day, and for each one
+         you get wrong, write down why the right answer is right.`],
+      p5flat: [`Steady daily work on Part 5`,
+        `All three question types sit at a similar level, so there is no shortcut here —
+         this is the part that rewards consistency. Ten sentences a day, and for every one
+         you get wrong, write down <i>why</i> the right answer is right. Speed on Part 5
+         is also what buys you time for Part 7.`],
+      longlistening: [`Build up to longer listening`,
+        `Short exchanges are working; longer recordings are not. Practise with one
+         conversation at a time and no questions at all — just listen, then say out loud
+         what happened. Add the questions back only once the summary comes easily.`],
+      readingweak: [`Put the extra practice time into reading`,
+        `Listening is the stronger half, so reading is where the unclaimed points are.
+         Parts 5 and 6 reward daily short practice; Part 7 rewards reading anything in
+         English for 15 minutes a day more than it rewards drills.`],
+      listeningweak: [`Put the extra practice time into listening`,
+        `Reading is the stronger half, so listening is where the unclaimed points are.
+         Fifteen minutes a day of anything spoken — podcasts, the test audio, the news —
+         does more than working through more written exercises.`],
+      tighttime: [`Build a time cushion on Part 5`,
+        `You finished with almost nothing to spare. Part 5 is where the minutes are won:
+         aim for 20 seconds a question and guess-and-move when nothing is obvious, so
+         Part 7 gets the time it needs.`]
+    };
+    const ORDER = ["overtime","detailslost","gistlost","lostthread","twodoc",
+                   "p5targeted","p5flat","longlistening","readingweak","listeningweak","tighttime"];
+    const picked = ORDER.filter(k => fired.has(k)).slice(0, 4);
+    if(!picked.length) return `<p>Your results are even enough across the test that there
+      is no single priority to name. Keep practising all four parts and re-test.</p>`;
+    return `<ol class="steps">${picked.map(k =>
+      `<li><b>${ADVICE[k][0]}</b><span>${ADVICE[k][1]}</span></li>`).join("")}</ol>`;
+  })()}
+</div>
+
+<div class="card">
+  <h2>What is going well</h2>
+  <p class="lede">Worth saying plainly, because the numbers above are demanding.</p>
+  ${(() => {
+    const wins = [];
+    const parts = Object.entries(P).map(([k,v]) => ({k, ...v, pct: v.correct/v.of}))
+                        .sort((a,b) => b.pct - a.pct);
+    const top = parts[0];
+    wins.push(`<b>${PART_NAMES[top.k]} is your strongest part</b> —
+      ${top.correct}/${top.of} (${pct(top.pct)}%), ${PART_DESC[top.k].toLowerCase()}.`);
+    if(shortL.pct >= .65) wins.push(`<b>Short spoken English is working</b> —
+      ${shortL.ok}/${shortL.of} across Parts 1 and 2. That is the foundation everything
+      else in listening is built on.`);
+    if(totalBlank === 0) wins.push(`<b>You answered every single question.</b> Nothing was
+      left blank, so no marks were given away for free.`);
+    else if(totalBlank <= 3) wins.push(`<b>Almost nothing was left blank</b> — only
+      ${totalBlank} question${totalBlank===1?"":"s"} unanswered out of 200.`);
+    if(p7single.pct >= .5) wins.push(`<b>Single-document reading is over half right</b>
+      (${p7single.ok}/${p7single.of}) — the reading foundation is there to build on.`);
+    if(detail.pct >= .55) wins.push(`<b>You pick out specifics from speech</b> —
+      ${detail.ok}/${detail.of} on the detail questions, which is the harder half of
+      listening.`);
+    return `<ul class="wins">${wins.slice(0,4).map(w => `<li>${w}</li>`).join("")}</ul>`;
+  })()}
+  <p class="note">This report shows which questions you got right and wrong, but not the
+    correct answers — those come in the review lesson, so the practice test stays useful
+    to take again.</p>
+</div>
+
+<div class="card" style="text-align:center">
+  <button class="btn" onclick="window.print()">Print / save as PDF</button>
+</div>`;
+
+/* ============================ tabs ============================ */
+const tabs = [...document.querySelectorAll('.tabs button')];
+tabs.forEach((b,i)=>{
+  b.addEventListener("click",()=>select(i));
+  b.addEventListener("keydown",e=>{
+    if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+      e.preventDefault();
+      select((i + (e.key==="ArrowRight"?1:tabs.length-1)) % tabs.length, true);
+    }
+  });
+});
+function select(i, focus){
+  tabs.forEach((b,j)=>{
+    b.setAttribute("aria-selected", j===i);
+    document.getElementById("p-"+b.dataset.p).classList.toggle("active", j===i);
+  });
+  if(focus) tabs[i].focus();
+  window.scrollTo({top:0, behavior:"smooth"});   // the frame, not the host page
+}
+
+/* ============================ theme toggle ============================ */
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  const m = document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute("content", t==="dark" ? "#050505" : "#ffffff");
+  const b = document.getElementById("themeToggle");
+  b.textContent = t==="dark" ? "☀" : "☾";
+  b.setAttribute("aria-label", t==="dark" ? "Switch to light mode" : "Switch to dark mode");
+}
+applyTheme(document.documentElement.getAttribute("data-theme") || "dark");
+document.getElementById("themeToggle").addEventListener("click", ()=>{
+  const next = document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark";
+  applyTheme(next); store.set("gm_theme", next);
+});
+matchMedia('(prefers-color-scheme: light)').addEventListener("change", e=>{
+  if(!store.get("gm_theme")) applyTheme(e.matches ? "light" : "dark");
+});
+
+document.getElementById("foot").textContent =
+  "Score estimates use the conversion tables in Tactics for TOEIC® Listening and Reading Test " +
+  "(Oxford University Press). Actual test scores may be higher or lower.";
+</script>
+</body>
+</html>
